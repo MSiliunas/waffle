@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# Waffle. SVG image crop.
+# https://github.com/MSiliunas/waffle
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+function help() {
+  echo "# Waffle. SVG image crop."
+  echo "# https://github.com/MSiliunas/waffle"
+  echo "# Licensed under GNU GPLv3 license"
+  echo ""
+  echo "Required arguments:"
+  echo "	-i              Path to input file"
+  echo "	--input-file"
+  echo "Optional arguments:"
+  echo "	-o              Output file path (default: ./*_cropped.svg)"
+  echo -e "	--output-file\n"
+  exit
+}
+
+# Handle passed arguments
+while [[ $# -gt 1 ]]; do
+  key="$1"
+  case $key in
+    -i|--input-file)
+    input_file="$2"
+    shift
+    ;;
+    -o|--output-file)
+    output_file="$2"
+    shift
+    ;;
+    *)	# Invalid argument passed
+    help
+    exit
+    ;;
+  esac
+  shift
+done
+
+if [ -z "${input_file}" ]; then
+  echo "ERROR! Input file not set."
+  help
+  exit
+fi
+
+if [ ! -f "${input_file}" ]; then
+  echo "ERROR! Given file does not exist!"
+  help
+  exit
+fi
+
+output=${output_file:-"$(basename ${input_file} .svg)_cropped.svg"}
+
+echo "Cropping ${input_file}..."
+
+# Find defined height and width
+svg_line=$(grep -m 1 "<svg *" ${input_file})
+height=$(echo ${svg_line} | grep -m 1 "<svg" | grep -o -E 'height="\d+' | cut -d '"' -f 2)
+width=$(echo ${svg_line} | grep -m 1 "<svg" | grep -o -E 'width="\d+' | cut -d '"' -f 2)
+
+echo "Dimensions: ${width}:${height}"
+
+# Check if svg contains cropPath
+if $(grep -q "cropPath" ${input_file}); then
+  echo "yra"
+else
+  echo "nera"
+fi
