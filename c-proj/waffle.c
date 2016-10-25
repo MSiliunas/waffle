@@ -10,6 +10,7 @@ int main(int argc, char *argv[]) {
     return(0);
   }
 
+  // Resolve given command and process it.
   if (strncmp(argv[1], CMD_HELP, sizeof(&CMD_HELP)) == 0) {
     printHelp();
     return(0);
@@ -34,6 +35,8 @@ int main(int argc, char *argv[]) {
   return(0);
 }
 
+// Function returns input filename from arguments.
+// Returns NULL if none given.
 char *getInputFilename(char *argv[], int argc) {
   char *filename = NULL;
   int i;
@@ -49,11 +52,14 @@ char *getInputFilename(char *argv[], int argc) {
   return filename;
 }
 
+// Function processess given SVG file.
+// Determines height and width; creates circle clipPath and applies it.
 void *cropToCircle(void *arg) {
   char *input = (char*)arg;
   int height = 0, width = 0;
   printf("Cropping %s to %s...\n", input, CMD_TYPE_CIRCLE);
 
+  // Prepare command for height and width extract
   char *heightCmd = (char*)malloc((sizeof(&input) + 90) * sizeof(char));
   char *widthCmd = (char*)malloc((sizeof(&input) + 90) * sizeof(char));
   sprintf(heightCmd, "grep -m 1 \"<svg *\" %s | grep -m 1 \"<svg\" | grep -o -E \
@@ -92,6 +98,7 @@ void *cropToCircle(void *arg) {
     r = width / 2;
   }
 
+  // Prepare clipPath statements
   char *clipPath = "<clipPath id=\"circle-clip\">\n    <circle cx=\"%d\" cy=\"%d\" r=\"%d\" />\n</clipPath>\n";
   char *outFileName = (char*)malloc((sizeof(&input) + 15) * sizeof(char));
   sprintf(outFileName, "%s_cropped.svg", input);
@@ -112,7 +119,7 @@ void *cropToCircle(void *arg) {
   regex_t regexG;
   int retiG;
 
-  /* Compile regular expression */
+  // Prepare regular expression
   retiSvg = regcomp(&regexSvg, "^<svg.*>", 0);
   if (retiSvg) {
       fprintf(stderr, "Could not compile regex\n");
