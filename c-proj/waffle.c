@@ -36,7 +36,8 @@ int main(int argc, char *argv[]) {
 
 char *getInputFilename(char *argv[], int argc) {
   char *filename = NULL;
-  for (int i = 2; i < argc; i++) {
+  int i;
+  for (i = 2; i < argc; i++) {
     if (strncmp(argv[i], CMD_INPUT_FILE, sizeof(&CMD_INPUT_FILE)) == 0
       || strncmp(argv[i], CMD_INPUT_FILE_SHORT, sizeof(&CMD_INPUT_FILE_SHORT)) == 0) {
         if (i + 1 <= argc) {
@@ -56,9 +57,9 @@ void *cropToCircle(void *arg) {
   char *heightCmd = (char*)malloc((sizeof(&input) + 90) * sizeof(char));
   char *widthCmd = (char*)malloc((sizeof(&input) + 90) * sizeof(char));
   sprintf(heightCmd, "grep -m 1 \"<svg *\" %s | grep -m 1 \"<svg\" | grep -o -E \
-   'height=\"\\d+' | cut -d '\"' -f 2", input);
+   'height=\"[0-9]*' | cut -d '\"' -f 2", input);
   sprintf(widthCmd, "grep -m 1 \"<svg *\" %s | grep -m 1 \"<svg\" | grep -o -E \
-   'width=\"\\d+' | cut -d '\"' -f 2", input);
+   'width=\"[0-9]*' | cut -d '\"' -f 2", input);
 
   FILE *heightOut = popen(heightCmd, "r");
   FILE *widthOut = popen(widthCmd, "r");
@@ -78,11 +79,11 @@ void *cropToCircle(void *arg) {
   free(widthCmd);
 
   if (height == 0) {
-    printf("ERROR! Svg tag is missing 'height' parameter.");
+    printf("ERROR! Svg tag is missing 'height' parameter.\n");
     pthread_exit(NULL);
   }
   if (width == 0) {
-    printf("ERROR! Svg tag is missing 'width' parameter.");
+    printf("ERROR! Svg tag is missing 'width' parameter.\n");
     pthread_exit(NULL);
   }
 
@@ -91,11 +92,11 @@ void *cropToCircle(void *arg) {
     r = width / 2;
   }
 
-  char *clipPath = "<clipPath id=\"circle-clip\">\n<circle cx=\"%d\" cy=\"%d\" r=\"%d\" />\n</clipPath>\n";
+  char *clipPath = "<clipPath id=\"circle-clip\">\n    <circle cx=\"%d\" cy=\"%d\" r=\"%d\" />\n</clipPath>\n";
   char *outFileName = (char*)malloc((sizeof(&input) + 15) * sizeof(char));
   sprintf(outFileName, "%s_cropped.svg", input);
 
-  FILE *outputFile = fopen(outFileName, "ab+");
+  FILE *outputFile = fopen(outFileName, "w+");
   FILE *inputFile = fopen(input, "r");
   char * line = NULL;
   size_t len = 0;
@@ -134,7 +135,7 @@ void *cropToCircle(void *arg) {
     if (!retiG) {
       char g[read - 2];
       strncpy(g, line, read - 2);
-      printf("%s clip-path=\"url(#circle-clip)\">\n", g);
+      g[read - 2] = '\0';
       fprintf(outputFile, "%s clip-path=\"url(#circle-clip)\">\n", g);
       continue;
     }
