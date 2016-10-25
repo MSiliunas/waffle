@@ -62,9 +62,9 @@ void *cropToCircle(void *arg) {
   // Prepare command for height and width extract
   char *heightCmd = (char*)malloc((sizeof(&input) + 90) * sizeof(char));
   char *widthCmd = (char*)malloc((sizeof(&input) + 90) * sizeof(char));
-  sprintf(heightCmd, "grep -m 1 \"<svg *\" %s | grep -m 1 \"<svg\" | grep -o -E \
+  sprintf(heightCmd, "grep -m 1 \"<svg *\" %s | grep -o -E \
    'height=\"[0-9]*' | cut -d '\"' -f 2", input);
-  sprintf(widthCmd, "grep -m 1 \"<svg *\" %s | grep -m 1 \"<svg\" | grep -o -E \
+  sprintf(widthCmd, "grep -m 1 \"<svg *\" %s | grep -o -E \
    'width=\"[0-9]*' | cut -d '\"' -f 2", input);
 
   FILE *heightOut = popen(heightCmd, "r");
